@@ -2,6 +2,7 @@ use anyhow::{bail, Result};
 use bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
+#[derive(Debug)]
 pub struct LineQueryCodec {
     next_index: usize,
 }
@@ -48,6 +49,7 @@ impl Encoder<Response> for LineQueryCodec {
     }
 }
 
+#[derive(Debug)]
 pub enum Request {
     Get { key: String },
     Set { key: String, value: String },
@@ -84,6 +86,7 @@ impl Request {
     }
 }
 
+#[derive(Debug)]
 pub enum Response {
     Get { key: String, value: Option<String> },
     Set { key: String },
@@ -121,6 +124,7 @@ impl Response {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Status {
     Okay,
     Fail,
