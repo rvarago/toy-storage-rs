@@ -103,7 +103,7 @@ impl Response {
                 let status = value
                     .as_ref()
                     .map(|_| Status::Okay)
-                    .unwrap_or_else(|| Status::Fail)
+                    .unwrap_or(Status::Fail)
                     .encode();
 
                 dst.reserve(status.len() + 1 + key.len());
