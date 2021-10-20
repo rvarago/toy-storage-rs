@@ -1,10 +1,14 @@
-# tokio-codec-experiment
+# A **toy** in-memory storage
 
-My toy wire protocol implemented in async Rust.
+This is my toy in-memory storage server with data exchanged over TCP.
 
-> DISCLAIMER: This is nothing more than a **playground** project.
+> DISCLAIMER: This is nothing more than a self-contained **playground** project for having some fun with Rust.
 
-## Protocol
+## Wire Protocol
+
+This is a request-response protocol, where the client initiates an exchange by sending a request to the server which then sends a response back to the client.
+
+Messages (request/response) are line-delimited.
 
 ### SET
 
@@ -17,11 +21,11 @@ My toy wire protocol implemented in async Rust.
 * Response (Success): `OKAY <KEY> <VALUE>\n`
 * Response (Failure): `FAIL <KEY> <VALUE>\n`
 
-## Example
+## Example Session
 
-Running an `nc` client against this project:
+By simulating a client as an `nc` instance:
 
-```
+```bash
 λ nc 127.0.0.1 8080
 GET rafael
 FAIL rafael
