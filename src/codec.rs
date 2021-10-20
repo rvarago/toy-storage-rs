@@ -111,11 +111,11 @@ impl Response {
                 dst.extend(b" ");
                 dst.extend(key.as_bytes());
 
-                value.map(|value| {
+                if let Some(value) = value {
                     dst.reserve(1 + value.len());
                     dst.extend(b" ");
                     dst.extend(value.as_bytes());
-                });
+                }
             }
         }
     }
