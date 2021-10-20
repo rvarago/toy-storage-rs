@@ -45,11 +45,11 @@ where
         }
     }
 
-    async fn get_from_store(&mut self, key: &String) -> Result<Option<String>> {
+    async fn get_from_store(&mut self, key: &str) -> Result<Option<String>> {
         store::get(key, &mut self.store_tx).await
     }
 
-    async fn set_into_store(&mut self, key: &String, value: String) -> Result<()> {
+    async fn set_into_store(&mut self, key: &str, value: String) -> Result<()> {
         store::set(key, value, &mut self.store_tx).await
     }
 }

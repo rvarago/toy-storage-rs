@@ -21,6 +21,7 @@ pub enum Query {
 }
 
 pub type Key = String;
+pub type KeyRef<'a> = &'a str;
 pub type Value = String;
 
 pub type Sender = mpsc::Sender<Query>;
@@ -50,7 +51,7 @@ impl Store {
     }
 }
 
-pub async fn get(key: &Key, store_tx: &mut Sender) -> Result<Option<Value>> {
+pub async fn get(key: KeyRef<'_>, store_tx: &mut Sender) -> Result<Option<Value>> {
     let (tx, rx) = oneshot::channel();
     store_tx
         .send(Query::Get {
@@ -61,7 +62,7 @@ pub async fn get(key: &Key, store_tx: &mut Sender) -> Result<Option<Value>> {
     rx.await.map_err(anyhow::Error::from)
 }
 
-pub async fn set(key: &Key, value: Value, store_tx: &mut Sender) -> Result<()> {
+pub async fn set(key: KeyRef<'_>, value: Value, store_tx: &mut Sender) -> Result<()> {
     store_tx
         .send(Query::Set {
             key: key.to_owned(),
