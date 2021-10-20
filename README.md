@@ -1,12 +1,12 @@
 # A **toy** in-memory storage
 
-This is my toy in-memory storage server with data exchanged over TCP.
+This is a toy in-memory storage server with data exchanged over the network.
 
 > DISCLAIMER: This is nothing more than a self-contained **playground** project for having some fun with Rust.
 
 ## Wire Protocol
 
-This is a request-response protocol, where the client initiates an exchange by sending a request to the server which then sends a response back to the client.
+This is a request-response protocol over TCP, where the client initiates an exchange by sending a request to the server which then sends a response back to the client.
 
 Messages (request/response) are line-delimited.
 

@@ -1,7 +1,8 @@
 [package]
 authors = ["Rafael Varago <varago.rafael@gmail.com>"]
 edition = "2018"
-name = "tokio-codec-experiment"
+name = "toy-storage"
+description = "This is a toy in-memory storage server with data exchanged over the network"
 version = "0.1.0"
 
 [dependencies]
