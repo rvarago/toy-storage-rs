@@ -9,7 +9,7 @@ mod store;
 
 #[derive(StructOpt)]
 struct Opts {
-    #[structopt(short, long, default_value = "0.0.0.0:8080")]
+    #[structopt(short, long, default_value = "127.0.0.1:8080")]
     address: String,
 }
 
