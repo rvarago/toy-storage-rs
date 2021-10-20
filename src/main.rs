@@ -24,8 +24,7 @@ async fn main() -> Result<()> {
     let (store, store_tx) = store::Store::new();
     let server = Server::new(listener, store_tx);
 
-    let (_, store_handle) = tokio::join!(server.start(), tokio::spawn(store.start()));
-    store_handle?;
+    tokio::join!(server.start(), store.start());
 
     Ok(())
 }
