@@ -82,7 +82,7 @@ impl Response {
     fn into_wire(self) -> String {
         match self {
             Response::Set { key } => {
-                let status = Status::Okay.to_wire();
+                let status = Status::Okay.into_wire();
                 format!("{} {}", status, key)
             }
             Response::Get { key, value } => {
@@ -90,7 +90,7 @@ impl Response {
                     .as_ref()
                     .map(|_| Status::Okay)
                     .unwrap_or(Status::Fail)
-                    .to_wire();
+                    .into_wire();
 
                 match value {
                     Some(value) => format!("{} {} {}", status, key, value),
@@ -108,7 +108,7 @@ enum Status {
 }
 
 impl Status {
-    fn to_wire(self) -> &'static str {
+    fn into_wire(self) -> &'static str {
         match self {
             Status::Okay => "OKAY",
             Status::Fail => "FAIL",
@@ -130,7 +130,7 @@ mod tests {
             .for_each(|(status, expected_encoded_status)| {
                 // Pre-condition.
                 // Action.
-                let encoded_status = status.to_wire();
+                let encoded_status = status.into_wire();
                 // Post-condition.
                 assert_eq!(encoded_status, expected_encoded_status);
             });
