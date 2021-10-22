@@ -21,6 +21,7 @@ impl Decoder for Codec {
             .as_deref()
             .map(Request::from_wire)
             .transpose()
+            .context("unable to parse request")
     }
 }
 
