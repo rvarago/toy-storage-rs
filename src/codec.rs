@@ -5,11 +5,11 @@ use bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder};
 
 #[derive(Default, Debug)]
-pub struct LineQueryCodec {
+pub struct Codec {
     next_index: usize,
 }
 
-impl Decoder for LineQueryCodec {
+impl Decoder for Codec {
     type Item = Request;
 
     type Error = anyhow::Error;
@@ -34,7 +34,7 @@ impl Decoder for LineQueryCodec {
     }
 }
 
-impl Encoder<Response> for LineQueryCodec {
+impl Encoder<Response> for Codec {
     type Error = anyhow::Error;
 
     fn encode(&mut self, item: Response, dst: &mut BytesMut) -> Result<(), Self::Error> {
@@ -160,7 +160,7 @@ mod tests {
         fn fails_to_decode_request_with_invalid_command(command in invalid_request_command()) {
             // Pre-condition.
             let mut message = BytesMut::from(format!("{}\n", command).as_str());
-            let mut decoder = LineQueryCodec::default();
+            let mut decoder = Codec::default();
 
             // Action.
             let request = decoder.decode(&mut message);
@@ -181,7 +181,7 @@ mod tests {
 
         cases.into_iter().for_each(|(message, reason)| {
             // Pre-condition.
-            let mut decoder = LineQueryCodec::default();
+            let mut decoder = Codec::default();
             let mut message = BytesMut::from(message);
 
             // Action.
@@ -215,7 +215,7 @@ mod tests {
             .into_iter()
             .for_each(|(message, expected_request, reason)| {
                 // Pre-condition.
-                let mut decoder = LineQueryCodec::default();
+                let mut decoder = Codec::default();
                 let mut message = BytesMut::from(message);
 
                 // Action.
@@ -257,7 +257,7 @@ mod tests {
             .into_iter()
             .for_each(|(response, expected_message, reason)| {
                 // Pre-condition.
-                let mut encoder = LineQueryCodec::default();
+                let mut encoder = Codec::default();
                 let mut message = BytesMut::default();
 
                 // Action.

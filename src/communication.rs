@@ -7,7 +7,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_util::codec::Framed;
 
 pub struct StoreProtocol<T> {
-    framed: Framed<T, codec::LineQueryCodec>,
+    framed: Framed<T, codec::Codec>,
     store_tx: store::Sender,
 }
 
@@ -17,7 +17,7 @@ where
 {
     pub fn new(conn: T, store_tx: store::Sender) -> Self {
         Self {
-            framed: Framed::new(conn, codec::LineQueryCodec::default()),
+            framed: Framed::new(conn, codec::Codec::default()),
             store_tx,
         }
     }
