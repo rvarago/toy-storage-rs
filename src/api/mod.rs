@@ -1,3 +1,3 @@
 pub mod codec;
-pub mod communication;
+pub mod service;
 pub mod types;
