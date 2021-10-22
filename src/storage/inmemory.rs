@@ -1,5 +1,6 @@
 //! In-memory key-value storage.
 
+use super::types::{Command, Key, KeyRef, Value};
 use anyhow::Result;
 use std::collections::HashMap;
 use tokio::sync::{mpsc, oneshot};
@@ -9,22 +10,6 @@ pub struct Store {
     data: HashMap<Key, Value>,
     queries: mpsc::Receiver<Command>,
 }
-
-#[derive(Debug)]
-pub enum Command {
-    Get {
-        key: Key,
-        cb: oneshot::Sender<Option<Value>>,
-    },
-    Set {
-        key: Key,
-        value: Value,
-    },
-}
-
-pub type Key = String;
-pub type KeyRef<'a> = &'a str;
-pub type Value = String;
 
 pub type Sender = mpsc::Sender<Command>;
 
