@@ -1,12 +1,12 @@
 //! Codec for the wire protocol through which requests/responses are exchanged.
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use bytes::BytesMut;
-use tokio_util::codec::{Decoder, Encoder};
+use tokio_util::codec::{Decoder, Encoder, LinesCodec};
 
 #[derive(Default, Debug)]
 pub struct Codec {
-    next_index: usize,
+    lines: LinesCodec,
 }
 
 impl Decoder for Codec {
@@ -15,22 +15,12 @@ impl Decoder for Codec {
     type Error = anyhow::Error;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        match src.iter().skip(self.next_index).position(|v| *v == b'\n') {
-            Some(i) => {
-                let newline_index = self.next_index + i + 1;
-                let line = src.split_to(newline_index);
-                let line = &line[..line.len() - 1];
-                let line = String::from_utf8_lossy(line);
-
-                self.next_index = 0;
-
-                Request::parse(line.as_ref()).map(Some)
-            }
-            None => {
-                self.next_index = src.len();
-                Ok(None)
-            }
-        }
+        self.lines
+            .decode(src)
+            .context("unable to decode request line")?
+            .as_deref()
+            .map(Request::from_wire)
+            .transpose()
     }
 }
 
@@ -38,10 +28,9 @@ impl Encoder<Response> for Codec {
     type Error = anyhow::Error;
 
     fn encode(&mut self, item: Response, dst: &mut BytesMut) -> Result<(), Self::Error> {
-        item.encode_to(dst);
-        dst.reserve(1);
-        dst.extend(b"\n");
-        Ok(())
+        self.lines
+            .encode(item.into_wire(), dst)
+            .context("unable to encode response line")
     }
 }
 
@@ -52,7 +41,7 @@ pub enum Request {
 }
 
 impl Request {
-    fn parse(src: &str) -> Result<Self> {
+    fn from_wire(src: &str) -> Result<Self> {
         // GET abc
         // SET abc 123
         let components = src.split(' ').collect::<Vec<_>>();
@@ -89,31 +78,22 @@ pub enum Response {
 }
 
 impl Response {
-    fn encode_to(self, dst: &mut BytesMut) {
+    fn into_wire(self) -> String {
         match self {
             Response::Set { key } => {
-                let status = Status::Okay.encode();
-                dst.reserve(status.len() + 1 + key.len());
-                dst.extend(status.as_bytes());
-                dst.extend(b" ");
-                dst.extend(key.as_bytes());
+                let status = Status::Okay.to_wire();
+                format!("{} {}", status, key)
             }
             Response::Get { key, value } => {
                 let status = value
                     .as_ref()
                     .map(|_| Status::Okay)
                     .unwrap_or(Status::Fail)
-                    .encode();
+                    .to_wire();
 
-                dst.reserve(status.len() + 1 + key.len());
-                dst.extend(status.as_bytes());
-                dst.extend(b" ");
-                dst.extend(key.as_bytes());
-
-                if let Some(value) = value {
-                    dst.reserve(1 + value.len());
-                    dst.extend(b" ");
-                    dst.extend(value.as_bytes());
+                match value {
+                    Some(value) => format!("{} {} {}", status, key, value),
+                    None => format!("{} {}", status, key),
                 }
             }
         }
@@ -127,7 +107,7 @@ enum Status {
 }
 
 impl Status {
-    fn encode(&self) -> &'static str {
+    fn to_wire(self) -> &'static str {
         match self {
             Status::Okay => "OKAY",
             Status::Fail => "FAIL",
@@ -149,7 +129,7 @@ mod tests {
             .for_each(|(status, expected_encoded_status)| {
                 // Pre-condition.
                 // Action.
-                let encoded_status = status.encode();
+                let encoded_status = status.to_wire();
                 // Post-condition.
                 assert_eq!(encoded_status, expected_encoded_status);
             });
