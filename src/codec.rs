@@ -42,32 +42,36 @@ pub enum Request {
 }
 
 impl Request {
-    fn from_wire(src: &str) -> Result<Self> {
+    fn from_wire(line: &str) -> Result<Self> {
         // GET abc
         // SET abc 123
-        let components = src.split(' ').collect::<Vec<_>>();
+        let mut components = line.split(' ');
 
-        match components[0] {
+        let command = components.next().context("missing command")?;
+
+        match command {
             "GET" => {
-                if components.len() != 2 {
-                    bail!("command GET expects 1 argument separated by whitespace")
-                } else {
-                    Ok(Request::Get {
-                        key: components[1].to_owned(),
-                    })
-                }
+                let key = components
+                    .next()
+                    .context("missing key from GET command")?
+                    .into();
+
+                Ok(Request::Get { key })
             }
             "SET" => {
-                if components.len() != 3 {
-                    bail!("command SET expects 2 arguments separated by whitespace")
-                } else {
-                    Ok(Request::Set {
-                        key: components[1].to_owned(),
-                        value: components[2].to_owned(),
-                    })
-                }
+                let key = components
+                    .next()
+                    .context("missing key from SET command")?
+                    .into();
+
+                let value = components
+                    .next()
+                    .context("missing value from SET command")?
+                    .into();
+
+                Ok(Request::Set { key, value })
             }
-            c => bail!("unrecognized command: {}", c),
+            _ => bail!("unrecognized command: {}", command),
         }
     }
 }
