@@ -96,10 +96,9 @@ impl Response {
                     .unwrap_or(Status::Fail)
                     .into_wire();
 
-                match value {
-                    Some(value) => format!("{} {} {}", status, key, value),
-                    None => format!("{} {}", status, key),
-                }
+                value
+                    .map(|value| format!("{} {} {}", status, key, value))
+                    .unwrap_or_else(|| format!("{} {}", status, key))
             }
         }
     }
