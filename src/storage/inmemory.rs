@@ -8,7 +8,7 @@ use tokio::sync::{mpsc, oneshot};
 #[derive(Debug)]
 pub struct Store {
     data: HashMap<Key, Value>,
-    queries: mpsc::Receiver<Command>,
+    commands: mpsc::Receiver<Command>,
 }
 
 pub type Sender = mpsc::Sender<Command>;
@@ -18,14 +18,14 @@ impl Store {
         let (tx, rx) = mpsc::channel(32);
         let store = Self {
             data: HashMap::new(),
-            queries: rx,
+            commands: rx,
         };
         (store, tx)
     }
 
     pub async fn start(mut self) {
-        while let Some(query) = self.queries.recv().await {
-            match query {
+        while let Some(command) = self.commands.recv().await {
+            match command {
                 Command::Get { key, cb } => {
                     let value = self.data.get(&key).map(Value::clone);
                     let _ = cb.send(value);
