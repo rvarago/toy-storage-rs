@@ -2,10 +2,7 @@ use anyhow::Result;
 use log::{error, info};
 use structopt::StructOpt;
 use tokio::net::TcpListener;
-
-mod codec;
-mod communication;
-mod store;
+use toy_storage::{communication, store};
 
 #[derive(StructOpt)]
 struct Opts {
