@@ -17,7 +17,7 @@ where
 {
     pub fn new(conn: T, store_tx: store::Sender) -> Self {
         Self {
-            framed: Framed::new(conn, codec::LineQueryCodec::new()),
+            framed: Framed::new(conn, codec::LineQueryCodec::default()),
             store_tx,
         }
     }

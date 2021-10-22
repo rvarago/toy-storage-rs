@@ -9,12 +9,6 @@ pub struct LineQueryCodec {
     next_index: usize,
 }
 
-impl LineQueryCodec {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
 impl Decoder for LineQueryCodec {
     type Item = Request;
 
