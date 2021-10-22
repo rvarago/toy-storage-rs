@@ -1,7 +1,7 @@
 //! In-memory key-value storage.
 
 use super::types::{Command, Key, KeyRef, Value};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::collections::HashMap;
 use tokio::sync::{mpsc, oneshot};
 
@@ -45,8 +45,9 @@ pub async fn get(key: KeyRef<'_>, store_tx: &mut Sender) -> Result<Option<Value>
             key: key.to_owned(),
             cb: tx,
         })
-        .await?;
-    rx.await.map_err(anyhow::Error::from)
+        .await
+        .context("unable to send get command")?;
+    rx.await.context("unable to access result of get command")
 }
 
 pub async fn set(key: KeyRef<'_>, value: Value, store_tx: &mut Sender) -> Result<()> {
@@ -56,5 +57,5 @@ pub async fn set(key: KeyRef<'_>, value: Value, store_tx: &mut Sender) -> Result
             value,
         })
         .await
-        .map_err(anyhow::Error::from)
+        .context("unable to send set command")
 }
