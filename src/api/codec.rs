@@ -22,6 +22,7 @@
 //!     - FAIL
 //!         - `FAIL $key\n`
 
+use super::types::{Request, Response};
 use anyhow::{bail, Context, Result};
 use bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder, LinesCodec};
@@ -57,12 +58,6 @@ impl Encoder<Response> for Codec {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Request {
-    Get { key: String },
-    Set { key: String, value: String },
-}
-
 impl Request {
     fn from_wire(line: &str) -> Result<Self> {
         let mut components = line.split(' ');
@@ -94,12 +89,6 @@ impl Request {
             _ => bail!("unrecognized command: {}", command),
         }
     }
-}
-
-#[derive(Debug)]
-pub enum Response {
-    Get { key: String, value: Option<String> },
-    Set { key: String },
 }
 
 impl Response {

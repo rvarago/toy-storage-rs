@@ -1,6 +1,9 @@
 //! Communication gateway meant to mediate access to storage.
 
-use super::codec;
+use super::{
+    codec::Codec,
+    types::{Request, Response},
+};
 use crate::storage::inmemory;
 use anyhow::Result;
 use futures::{SinkExt, StreamExt};
@@ -10,7 +13,7 @@ use tokio_util::codec::Framed;
 
 #[derive(Debug)]
 pub struct StoreProtocol<T> {
-    framed: Framed<T, codec::Codec>,
+    framed: Framed<T, Codec>,
     store_tx: inmemory::Sender,
 }
 
@@ -20,7 +23,7 @@ where
 {
     pub fn new(conn: T, store_tx: inmemory::Sender) -> Self {
         Self {
-            framed: Framed::new(conn, codec::Codec::default()),
+            framed: Framed::new(conn, Codec::default()),
             store_tx,
         }
     }
@@ -33,17 +36,17 @@ where
         Ok(())
     }
 
-    async fn process(&mut self, req: codec::Request) -> Result<codec::Response> {
+    async fn process(&mut self, req: Request) -> Result<Response> {
         match req {
-            codec::Request::Get { key } => {
+            Request::Get { key } => {
                 info!("Get: key: {}", key);
                 let value = self.get_from_store(&key).await?;
-                Ok(codec::Response::Get { key, value })
+                Ok(Response::Get { key, value })
             }
-            codec::Request::Set { key, value } => {
+            Request::Set { key, value } => {
                 info!("Set: key: {} value: {}", key, value);
                 self.set_into_store(&key, value).await?;
-                Ok(codec::Response::Set { key })
+                Ok(Response::Set { key })
             }
         }
     }
