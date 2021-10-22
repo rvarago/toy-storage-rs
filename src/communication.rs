@@ -1,6 +1,7 @@
 //! Communication gateway meant to mediate access to storage.
 
-use super::{codec, store};
+use super::codec;
+use crate::storage::inmemory;
 use anyhow::Result;
 use futures::{SinkExt, StreamExt};
 use log::info;
@@ -10,14 +11,14 @@ use tokio_util::codec::Framed;
 #[derive(Debug)]
 pub struct StoreProtocol<T> {
     framed: Framed<T, codec::Codec>,
-    store_tx: store::Sender,
+    store_tx: inmemory::Sender,
 }
 
 impl<T> StoreProtocol<T>
 where
     T: AsyncRead + AsyncWrite + Unpin,
 {
-    pub fn new(conn: T, store_tx: store::Sender) -> Self {
+    pub fn new(conn: T, store_tx: inmemory::Sender) -> Self {
         Self {
             framed: Framed::new(conn, codec::Codec::default()),
             store_tx,
@@ -48,10 +49,10 @@ where
     }
 
     async fn get_from_store(&mut self, key: &str) -> Result<Option<String>> {
-        store::get(key, &mut self.store_tx).await
+        inmemory::get(key, &mut self.store_tx).await
     }
 
     async fn set_into_store(&mut self, key: &str, value: String) -> Result<()> {
-        store::set(key, value, &mut self.store_tx).await
+        inmemory::set(key, value, &mut self.store_tx).await
     }
 }

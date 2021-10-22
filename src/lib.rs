@@ -1,8 +1,8 @@
 pub mod codec;
 pub mod communication;
 pub mod server;
-pub mod store;
+pub mod storage;
 
 pub use server::Server;
 
-pub use store::Store;
+pub use storage::InMemoryStore;

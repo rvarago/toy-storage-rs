@@ -1,16 +1,16 @@
 //! Network server meant to interact to service requests from clients.
 
-use crate::{communication, store};
+use crate::{communication, storage::inmemory};
 use log::{error, info};
 use tokio::net::TcpListener;
 
 pub struct Server {
     listener: TcpListener,
-    store_tx: store::Sender,
+    store_tx: inmemory::Sender,
 }
 
 impl Server {
-    pub fn new(listener: TcpListener, store_tx: store::Sender) -> Self {
+    pub fn new(listener: TcpListener, store_tx: inmemory::Sender) -> Self {
         Self { listener, store_tx }
     }
 
