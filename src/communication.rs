@@ -1,11 +1,13 @@
-use super::codec;
-use super::store;
+//! Communication gateway meant to mediate access to storage.
+
+use super::{codec, store};
 use anyhow::Result;
 use futures::{SinkExt, StreamExt};
 use log::info;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_util::codec::Framed;
 
+#[derive(Debug)]
 pub struct StoreProtocol<T> {
     framed: Framed<T, codec::Codec>,
     store_tx: store::Sender,

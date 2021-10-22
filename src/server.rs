@@ -1,3 +1,5 @@
+//! Network server meant to interact to service requests from clients.
+
 use crate::{communication, store};
 use log::{error, info};
 use tokio::net::TcpListener;

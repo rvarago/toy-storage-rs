@@ -1,4 +1,26 @@
 //! Codec for the wire protocol through which requests/responses are exchanged.
+//!
+//! The wire protocol is optimized for simplicity, where both request
+//! and response are line-delimited and further split by whitespaces into
+//! components.
+//!
+//! # Request
+//!
+//! - GET
+//!     - `GET $key\n`
+//! - SET
+//!     - `SET $key $value\n`
+//!
+//! # Response
+//!
+//! - GET
+//!     - OK
+//!         - `OKAY $key\n`
+//! - SET
+//!     - OK
+//!         - `OKAY $key $value\n`
+//!     - FAIL
+//!         - `FAIL $key\n`
 
 use anyhow::{bail, Context, Result};
 use bytes::BytesMut;
@@ -43,8 +65,6 @@ pub enum Request {
 
 impl Request {
     fn from_wire(line: &str) -> Result<Self> {
-        // GET abc
-        // SET abc 123
         let mut components = line.split(' ');
 
         let command = components.next().context("missing command")?;
