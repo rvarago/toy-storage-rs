@@ -1,6 +1,6 @@
 //! Network server meant to interact to service requests from clients.
 
-use crate::{communication, storage::inmemory};
+use crate::{api::communication, storage::inmemory};
 use log::{error, info};
 use tokio::net::TcpListener;
 

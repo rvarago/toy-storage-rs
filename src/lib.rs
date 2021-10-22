@@ -1,5 +1,4 @@
-pub mod codec;
-pub mod communication;
+pub mod api;
 pub mod server;
 pub mod storage;
 
