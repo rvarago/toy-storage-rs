@@ -60,7 +60,7 @@ impl Request {
         match components[0] {
             "GET" => {
                 if components.len() != 2 {
-                    bail!("GET expects 1 argument separated by whitespace")
+                    bail!("command GET expects 1 argument separated by whitespace")
                 } else {
                     Ok(Request::Get {
                         key: components[1].to_owned(),
@@ -69,7 +69,7 @@ impl Request {
             }
             "SET" => {
                 if components.len() != 3 {
-                    bail!("SET expects 2 arguments separated by whitespace")
+                    bail!("command SET expects 2 arguments separated by whitespace")
                 } else {
                     Ok(Request::Set {
                         key: components[1].to_owned(),
@@ -77,7 +77,7 @@ impl Request {
                     })
                 }
             }
-            c => bail!("Unknown command: {}", c),
+            c => bail!("unrecognized command: {}", c),
         }
     }
 }
