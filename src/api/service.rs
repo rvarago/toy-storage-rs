@@ -21,15 +21,15 @@ where
         Self { frames, store }
     }
 
-    pub async fn handle(mut self) -> Result<()> {
+    pub async fn start(mut self) -> Result<()> {
         while let Some(req) = self.frames.next().await {
-            let res = self.process(req?).await?;
+            let res = self.handle(req?).await?;
             self.frames.send(res).await?;
         }
         Ok(())
     }
 
-    async fn process(&mut self, req: Request) -> Result<Response> {
+    async fn handle(&mut self, req: Request) -> Result<Response> {
         match req {
             Request::Get { key } => {
                 info!("get: key: {}", key);

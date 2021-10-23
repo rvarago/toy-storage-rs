@@ -42,7 +42,7 @@ where
 
             info!("serving new connection");
 
-            match service.handle().await {
+            match service.start().await {
                 Ok(_) => info!("bye"),
                 Err(e) => error!(reason = %e, "oops"),
             }
