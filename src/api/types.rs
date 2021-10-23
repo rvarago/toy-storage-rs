@@ -6,7 +6,7 @@ pub enum Request {
     Set { key: String, value: String },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Response {
     Get { key: String, value: Option<String> },
     Set { key: String },
