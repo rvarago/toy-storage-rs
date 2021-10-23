@@ -2,7 +2,7 @@ use anyhow::Result;
 use log::info;
 use structopt::StructOpt;
 use tokio::net::TcpListener;
-use toy_storage::{storage::inmemory, Server};
+use toy_storage::{api::Server, storage::inmemory};
 
 #[derive(StructOpt)]
 struct Opts {
