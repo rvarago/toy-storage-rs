@@ -1,38 +1,30 @@
 //! Communication gateway meant to mediate access to storage.
 
-use super::{
-    codec::Codec,
-    types::{Request, Response},
-};
+use super::types::{Request, Response};
 use crate::storage::Store;
 use anyhow::Result;
-use futures::{SinkExt, StreamExt};
+use futures::{Sink, SinkExt, Stream, StreamExt};
 use log::info;
-use tokio::io::{AsyncRead, AsyncWrite};
-use tokio_util::codec::Framed;
 
 #[derive(Debug)]
-pub struct StoreProtocol<T, S> {
-    framed: Framed<T, Codec>,
+pub struct StoreService<F, S> {
+    frames: F,
     store: S,
 }
 
-impl<T, S> StoreProtocol<T, S>
+impl<F, S> StoreService<F, S>
 where
-    T: AsyncRead + AsyncWrite + Unpin,
+    F: Stream<Item = anyhow::Result<Request>> + Sink<Response, Error = anyhow::Error> + Unpin,
     S: Store<Err = anyhow::Error>,
 {
-    pub fn new(conn: T, store: S) -> Self {
-        Self {
-            framed: Framed::new(conn, Codec::default()),
-            store,
-        }
+    pub fn new(frames: F, store: S) -> Self {
+        Self { frames, store }
     }
 
     pub async fn handle(mut self) -> Result<()> {
-        while let Some(req) = self.framed.next().await {
+        while let Some(req) = self.frames.next().await {
             let res = self.process(req?).await?;
-            self.framed.send(res).await?;
+            self.frames.send(res).await?;
         }
         Ok(())
     }

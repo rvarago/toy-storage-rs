@@ -1,8 +1,15 @@
 //! Network server meant to interact to service requests from clients.
 
-use crate::{api::service, storage::Store};
+use crate::{
+    api::{framed, StoreService},
+    storage::Store,
+};
 use log::{error, info};
-use tokio::net::TcpListener;
+use std::net::SocketAddr;
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    net::TcpListener,
+};
 
 pub struct Server<S> {
     listener: TcpListener,
@@ -18,15 +25,30 @@ where
     }
 
     pub async fn start(self) {
-        while let Ok((conn, peer)) = self.listener.accept().await {
-            info!("Received connection from {}", peer);
-            let protocol = service::StoreProtocol::new(conn, self.store.clone());
-            tokio::spawn(async move {
-                match protocol.handle().await {
-                    Ok(_) => info!("Bye {}", peer),
-                    Err(e) => error!("Oops from {}: {}", peer, e),
-                }
-            });
+        while let Ok((conn, peer_addr)) = self.listener.accept().await {
+            self.handle(conn, peer_addr)
         }
+    }
+
+    fn handle<C>(&self, conn: C, peer_addr: SocketAddr)
+    where
+        C: AsyncRead + AsyncWrite + Send + Unpin + 'static,
+    {
+        info!("Received connection from {}", peer_addr);
+
+        let service = self.new_service(conn);
+        tokio::spawn(async move {
+            match service.handle().await {
+                Ok(_) => info!("Bye {}", peer_addr),
+                Err(e) => error!("Oops from {}: {}", peer_addr, e),
+            }
+        });
+    }
+
+    fn new_service<C>(&self, conn: C) -> StoreService<C, S>
+    where
+        C: AsyncRead + AsyncWrite + Unpin,
+    {
+        StoreService::new(framed(conn), self.store.clone())
     }
 }
