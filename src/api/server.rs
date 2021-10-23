@@ -4,12 +4,12 @@ use crate::{
     api::{framed, StoreService},
     storage::Store,
 };
-use log::{error, info};
 use std::net::SocketAddr;
 use tokio::{
     io::{AsyncRead, AsyncWrite},
     net::TcpListener,
 };
+use tracing::{error, info, span, Level};
 
 pub struct Server<S> {
     listener: TcpListener,
@@ -34,13 +34,17 @@ where
     where
         C: AsyncRead + AsyncWrite + Send + Unpin + 'static,
     {
-        info!("Received connection from {}", peer_addr);
-
         let service = self.new_service(conn);
+
         tokio::spawn(async move {
+            let span = span!(Level::INFO, "connection", peer_addr = %peer_addr);
+            let _enter = span.enter();
+
+            info!("serving new connection");
+
             match service.handle().await {
-                Ok(_) => info!("Bye {}", peer_addr),
-                Err(e) => error!("Oops from {}: {}", peer_addr, e),
+                Ok(_) => info!("bye"),
+                Err(e) => error!(reason = %e, "oops"),
             }
         });
     }

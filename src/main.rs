@@ -1,8 +1,8 @@
 use anyhow::Result;
-use log::info;
 use structopt::StructOpt;
 use tokio::net::TcpListener;
 use toy_storage::{api::Server, storage::inmemory};
+use tracing::info;
 
 #[derive(StructOpt)]
 struct Opts {
@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
 }
 
 async fn run_with(opts: Opts) -> Result<()> {
-    info!("Listening at {}", opts.address);
+    info!("listening at {}", opts.address);
 
     let listener = TcpListener::bind(opts.address).await?;
 
@@ -32,5 +32,5 @@ async fn run_with(opts: Opts) -> Result<()> {
 }
 
 fn init_logger() {
-    env_logger::init()
+    tracing_subscriber::fmt().init()
 }

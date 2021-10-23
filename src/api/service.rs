@@ -4,7 +4,7 @@ use super::types::{Request, Response};
 use crate::storage::Store;
 use anyhow::Result;
 use futures::{Sink, SinkExt, Stream, StreamExt};
-use log::info;
+use tracing::info;
 
 #[derive(Debug)]
 pub struct StoreService<F, S> {
@@ -32,12 +32,12 @@ where
     async fn process(&mut self, req: Request) -> Result<Response> {
         match req {
             Request::Get { key } => {
-                info!("Get: key: {}", key);
+                info!("get: key: {}", key);
                 let value = self.get_from_store(&key).await?;
                 Ok(Response::Get { key, value })
             }
             Request::Set { key, value } => {
-                info!("Set: key: {} value: {}", key, value);
+                info!("set: key: {} value: {}", key, value);
                 self.set_into_store(key.clone(), value).await?;
                 Ok(Response::Set { key })
             }
