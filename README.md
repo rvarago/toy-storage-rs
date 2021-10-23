@@ -12,14 +12,14 @@ Messages (request/response) are line-delimited.
 
 ### SET
 
-* Request: `SET <KEY> <VALUE>\n`
-* Response: `OKAY <KEY>\n`
+- Request: `SET <KEY> <VALUE>\n`
+- Response: `OKAY <KEY>\n`
   
 ### GET
 
-* Request: `GET <KEY>\n`
-* Response (Success): `OKAY <KEY> <VALUE>\n`
-* Response (Failure): `FAIL <KEY> <VALUE>\n`
+- Request: `GET <KEY>\n`
+- Response (Success): `OKAY <KEY> <VALUE>\n`
+- Response (Failure): `FAIL <KEY> <VALUE>\n`
 
 ## Example Session
 
