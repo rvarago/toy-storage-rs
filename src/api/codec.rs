@@ -22,7 +22,7 @@
 //!     - FAIL
 //!         - `FAIL $key\n`
 
-use super::types::{Request, Response};
+use super::types::{Request, Response, Status};
 use anyhow::{bail, Context, Result};
 use bytes::BytesMut;
 use tokio_util::codec::{Decoder, Encoder, LinesCodec};
@@ -93,30 +93,16 @@ impl Request {
 
 impl Response {
     fn into_wire(self) -> String {
+        let status = self.status().into_wire();
         match self {
             Response::Set { key } => {
-                let status = Status::Okay.into_wire();
                 format!("{} {}", status, key)
             }
-            Response::Get { key, value } => {
-                let status = value
-                    .as_ref()
-                    .map(|_| Status::Okay)
-                    .unwrap_or(Status::Fail)
-                    .into_wire();
-
-                value
-                    .map(|value| format!("{} {} {}", status, key, value))
-                    .unwrap_or_else(|| format!("{} {}", status, key))
-            }
+            Response::Get { key, value } => value
+                .map(|value| format!("{} {} {}", status, key, value))
+                .unwrap_or_else(|| format!("{} {}", status, key)),
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Status {
-    Okay,
-    Fail,
 }
 
 impl Status {
