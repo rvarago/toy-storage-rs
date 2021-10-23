@@ -72,3 +72,66 @@ impl Backend {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::storage::Store;
+
+    #[tokio::test]
+    async fn get_with_no_prior_set_returns_none() {
+        // Pre-condition.
+        let store = start();
+
+        // Action.
+        let value = store.get("k").await.unwrap();
+
+        // Post-condition.
+        assert_eq!(value, None);
+    }
+
+    #[tokio::test]
+    async fn get_after_set_returns_set_value() {
+        // Pre-condition.
+        let mut store = start();
+
+        // Action.
+        store.set("k".into(), "a".into()).await.unwrap();
+
+        let value = store.get("k").await.unwrap();
+
+        // Post-condition.
+        assert_eq!(value, Some("a".into()));
+    }
+
+    #[tokio::test]
+    async fn get_twice_with_no_set_in_between_returns_same_value() {
+        // Pre-condition.
+        let mut store = start();
+
+        // Action.
+        store.set("k".into(), "a".into()).await.unwrap();
+
+        let value_first = store.get("k").await.unwrap();
+        let value_second = store.get("k").await.unwrap();
+
+        // Post-condition.
+        assert_eq!(value_first, Some("a".into()));
+        assert_eq!(value_second, Some("a".into()));
+    }
+
+    #[tokio::test]
+    async fn set_overrides_prior_set_value() {
+        // Pre-condition.
+        let mut store = start();
+
+        // Action.
+        store.set("k".into(), "a".into()).await.unwrap();
+        store.set("k".into(), "b".into()).await.unwrap();
+
+        let value = store.get("k").await.unwrap();
+
+        // Post-condition.
+        assert_eq!(value, Some("b".into()));
+    }
+}
