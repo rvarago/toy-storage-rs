@@ -4,7 +4,7 @@ use super::{
     codec::Codec,
     types::{Request, Response},
 };
-use crate::storage::inmemory;
+use crate::storage::Store;
 use anyhow::Result;
 use futures::{SinkExt, StreamExt};
 use log::info;
@@ -12,19 +12,20 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_util::codec::Framed;
 
 #[derive(Debug)]
-pub struct StoreProtocol<T> {
+pub struct StoreProtocol<T, S> {
     framed: Framed<T, Codec>,
-    store_tx: inmemory::Sender,
+    store: S,
 }
 
-impl<T> StoreProtocol<T>
+impl<T, S> StoreProtocol<T, S>
 where
     T: AsyncRead + AsyncWrite + Unpin,
+    S: Store<Err = anyhow::Error>,
 {
-    pub fn new(conn: T, store_tx: inmemory::Sender) -> Self {
+    pub fn new(conn: T, store: S) -> Self {
         Self {
             framed: Framed::new(conn, Codec::default()),
-            store_tx,
+            store,
         }
     }
 
@@ -45,17 +46,17 @@ where
             }
             Request::Set { key, value } => {
                 info!("Set: key: {} value: {}", key, value);
-                self.set_into_store(&key, value).await?;
+                self.set_into_store(key.clone(), value).await?;
                 Ok(Response::Set { key })
             }
         }
     }
 
     async fn get_from_store(&mut self, key: &str) -> Result<Option<String>> {
-        inmemory::get(key, &mut self.store_tx).await
+        self.store.get(key).await
     }
 
-    async fn set_into_store(&mut self, key: &str, value: String) -> Result<()> {
-        inmemory::set(key, value, &mut self.store_tx).await
+    async fn set_into_store(&mut self, key: String, value: String) -> Result<()> {
+        self.store.set(key, value).await
     }
 }

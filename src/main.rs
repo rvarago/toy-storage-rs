@@ -2,7 +2,7 @@ use anyhow::Result;
 use log::info;
 use structopt::StructOpt;
 use tokio::net::TcpListener;
-use toy_storage::{InMemoryStore, Server};
+use toy_storage::{storage::inmemory, Server};
 
 #[derive(StructOpt)]
 struct Opts {
@@ -12,16 +12,25 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::init();
+    init_logger();
+
     let opts = Opts::from_args();
 
+    run_with(opts).await
+}
+
+async fn run_with(opts: Opts) -> Result<()> {
     info!("Listening at {}", opts.address);
+
     let listener = TcpListener::bind(opts.address).await?;
 
-    let (store, store_tx) = InMemoryStore::new();
-    let server = Server::new(listener, store_tx);
+    let store = inmemory::start();
 
-    tokio::join!(server.start(), store.start());
+    Server::new(listener, store).start().await;
 
     Ok(())
+}
+
+fn init_logger() {
+    env_logger::init()
 }
