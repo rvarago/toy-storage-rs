@@ -2,7 +2,7 @@
 
 This is a toy in-memory storage server with data exchanged over the network.
 
-> DISCLAIMER: This is nothing more than a self-contained **playground** project for having some fun with Rust.
+> DISCLAIMER: This is nothing more than a self-contained **playground** project for having some fun while learning Rust.
 
 ## Wire Protocol
 
